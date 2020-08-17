@@ -26,6 +26,7 @@ public class MainActivity extends BaseActivity {
         setContentView(R.layout.activity_main);
 
 
+        findViewById(R.id.button_prog).setOnClickListener(v -> startActivity(new Intent(MainActivity.this, DismissActivity.class)));
         findViewById(R.id.button_top).setOnClickListener(v -> startActivity(new Intent(MainActivity.this, DismissFromTopActivity.class)));
         findViewById(R.id.button_start).setOnClickListener(v -> startActivity(new Intent(MainActivity.this, DismissFromStartActivity.class)));
         findViewById(R.id.button_bottom).setOnClickListener(v -> startActivity(new Intent(MainActivity.this, DismissFromBottomActivity.class)));

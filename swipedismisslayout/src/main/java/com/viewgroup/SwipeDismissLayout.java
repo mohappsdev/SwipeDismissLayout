@@ -14,13 +14,16 @@ import android.widget.ScrollView;
 import com.viewgroup.attributes.AttributeExtractorImpl;
 
 import androidx.annotation.NonNull;
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.view.ViewCompat;
+import androidx.core.widget.NestedScrollView;
 import androidx.customview.widget.ViewDragHelper;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import androidx.viewpager.widget.ViewPager;
+import androidx.viewpager2.widget.ViewPager2;
 
-/**
- * Created by arpit on 10/28/16.
- */
+
 public class SwipeDismissLayout extends ViewGroup {
 
     private final ViewDragHelper viewDragHelper;
@@ -179,12 +182,36 @@ public class SwipeDismissLayout extends ViewGroup {
                 break;
         }
     }
+    private float mX = -1,mY = -1;
+    private boolean isSwipeIndirect(MotionEvent ev) {
+        boolean indirect = false;
 
+        if (ev.getAction() == MotionEvent.ACTION_DOWN) {
+            mX = ev.getRawX();
+            mY = ev.getRawY();
+        }
+
+        float distanceY = Math.abs(ev.getRawY() - mY);
+        float distanceX = Math.abs(ev.getRawX() - mX);
+
+        switch (dragFrom) {
+            case TOP:
+            case BOTTOM:
+                indirect = distanceY < distanceX;
+                break;
+            case START:
+            case END:
+                indirect = distanceX < distanceY;
+                break;
+        }
+
+        return indirect;
+    }
     @Override
     public boolean onInterceptTouchEvent(MotionEvent ev) {
         boolean handled = false;
         ensureTarget();
-        if (isEnabled() && isSwipeEnabled) {
+        if (isEnabled() && isSwipeEnabled && !isSwipeIndirect(ev)) {
             handled = viewDragHelper.shouldInterceptTouchEvent(ev);
         } else {
             viewDragHelper.cancel();
@@ -223,9 +250,9 @@ public class SwipeDismissLayout extends ViewGroup {
             View child;
             for (int i = 0; i < count; i++) {
                 child = viewGroup.getChildAt(i);
-                if (child instanceof AbsListView || child instanceof ScrollView || child instanceof ViewPager || child instanceof WebView) {
-                    scrollableChild = child;
-                    return;
+                if (child instanceof AbsListView|| child instanceof RecyclerView || child instanceof ScrollView || child instanceof NestedScrollView || child instanceof ViewPager || child instanceof ViewPager2 || child instanceof WebView || child instanceof CoordinatorLayout || child instanceof SwipeRefreshLayout) {
+                    findScrollView((ViewGroup) child);
+                    //scrollableChild = child;
                 }
             }
         }

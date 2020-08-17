@@ -17,6 +17,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name="com.viewgroup.sample.DismissActivity"
+            android:theme="@style/SwipeDismissTheme">
+        </activity>
         <activity android:name="com.viewgroup.sample.DismissFromTopActivity"
             android:theme="@style/SwipeDismissTheme">
         </activity>

@@ -1,8 +1,6 @@
 package com.viewgroup.attributes;
 
-/**
- * Created by arpit on 10/28/16.
- */
+
 public interface AttributeExtractor {
 
     /**

@@ -8,9 +8,7 @@ import com.viewgroup.R;
 
 import java.lang.ref.WeakReference;
 
-/**
- * Created by arpit on 10/28/16.
- */
+
 
 public class AttributeExtractorImpl implements AttributeExtractor {
 

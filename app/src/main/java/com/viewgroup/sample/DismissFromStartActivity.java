@@ -5,9 +5,7 @@ import android.webkit.WebView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-/**
- * Created by Arpit on 11/1/2016.
- */
+
 public class DismissFromStartActivity extends BaseActivity {
 
     @Override

@@ -4,9 +4,7 @@ import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-/**
- * Created by Arpit on 11/1/2016.
- */
+
 public class DismissFromBottomActivity extends BaseActivity {
 
     @Override

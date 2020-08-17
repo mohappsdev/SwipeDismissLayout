@@ -13,18 +13,32 @@ import static android.content.Context.MODE_PRIVATE;
 
 public class Helper {
     public static final String PREFERENCES_PARENT_LANG ="LANG";
+    public static final String PREFERENCES_PARENT_DRAG ="DRAG";
     public static final String PREFERENCES_NAME_LANG_CODE ="lang_code";
+    public static final String PREFERENCES_NAME_DRAG_FROM ="drag_from";
 
     public static String loadPreference(Context context, String parentName, String name, String defValue)
     {
         SharedPreferences pref = context.getSharedPreferences(parentName, MODE_PRIVATE);
         return pref.getString(name, defValue);
     }
+    public static int loadPreference(Context context, String parentName, String name, int defValue)
+    {
+        SharedPreferences pref = context.getSharedPreferences(parentName, MODE_PRIVATE);
+        return pref.getInt(name, defValue);
+    }
     public static void savePreference(Context context, String parentName, String name, String newValue)
     {
         SharedPreferences pref = context.getSharedPreferences(parentName, MODE_PRIVATE);
         SharedPreferences.Editor editor = pref.edit();
         editor.putString(name, newValue);
+        editor.apply();
+    }
+    public static void savePreference(Context context, String parentName, String name, int newValue)
+    {
+        SharedPreferences pref = context.getSharedPreferences(parentName, MODE_PRIVATE);
+        SharedPreferences.Editor editor = pref.edit();
+        editor.putInt(name, newValue);
         editor.apply();
     }
     public static Context SetLanguage(Context context) {
