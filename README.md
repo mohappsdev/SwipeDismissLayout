@@ -4,14 +4,18 @@ SwipeDismissLayout
 ===================
 
 v1.2.0 by mohapps:
+
 make activity dismissable by just a single line of code
+
 support for more scrollable children
+
 ignoring indirect swipes (children can scroll better)
 
 v1.1.0 by mohapps:
-added swipe from top, start, bottom, end with RTL support
-migrated to AndroidX, updated Gradle and build tools
 
+added swipe from top, start, bottom, end with RTL support
+
+migrated to AndroidX, updated Gradle and build tools
 
 
 ----------
