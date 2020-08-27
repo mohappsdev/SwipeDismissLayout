@@ -13,6 +13,9 @@ import android.widget.ScrollView;
 
 import com.viewgroup.attributes.AttributeExtractorImpl;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import androidx.annotation.NonNull;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.view.ViewCompat;
@@ -30,7 +33,8 @@ public class SwipeDismissLayout extends ViewGroup {
 
     private View view;
 
-    private View scrollableChild;
+    private List<View> touchedFamily;
+    private List<View> scrollableChildren;
 
     private int verticalDragRange = 0;
     private int horizontalDragRange = 0;
@@ -59,7 +63,7 @@ public class SwipeDismissLayout extends ViewGroup {
     public SwipeDismissLayout(Context context) {
         super(context);
         viewDragHelper = init();
-        globalLayoutListener = this::clearScrollableChild;
+        globalLayoutListener = this::clearScrollableChildren;
 
         getViewTreeObserver().addOnGlobalLayoutListener(globalLayoutListener);
     }
@@ -69,7 +73,7 @@ public class SwipeDismissLayout extends ViewGroup {
         viewDragHelper = init();
         initialize(attrs);
 
-        globalLayoutListener = this::clearScrollableChild;
+        globalLayoutListener = this::clearScrollableChildren;
 
         getViewTreeObserver().addOnGlobalLayoutListener(globalLayoutListener);
     }
@@ -211,6 +215,7 @@ public class SwipeDismissLayout extends ViewGroup {
     public boolean onInterceptTouchEvent(MotionEvent ev) {
         boolean handled = false;
         ensureTarget();
+        findTouchedFamily(ev);
         if (isEnabled() && isSwipeEnabled && !isSwipeIndirect(ev)) {
             handled = viewDragHelper.shouldInterceptTouchEvent(ev);
         } else {
@@ -232,28 +237,39 @@ public class SwipeDismissLayout extends ViewGroup {
             }
             view = getChildAt(0);
 
-            if (scrollableChild == null && view != null) {
-                if (view instanceof ViewGroup) {
-                    findScrollView((ViewGroup) view);
-                } else {
-                    scrollableChild = view;
-                }
+            if (scrollableChildren == null && view != null) {
+                scrollableChildren = new ArrayList<>();
 
+                scrollableChildren.add(view);
+                if (view instanceof ViewGroup) {
+                    findScrollableChildren((ViewGroup) view);
+                }
             }
         }
     }
 
-    private void findScrollView(ViewGroup viewGroup) {
-        scrollableChild = viewGroup;
+    private void findScrollableChildren(ViewGroup viewGroup){
         if (viewGroup.getChildCount() > 0) {
             int count = viewGroup.getChildCount();
-            View child;
             for (int i = 0; i < count; i++) {
-                child = viewGroup.getChildAt(i);
-                if (child instanceof AbsListView|| child instanceof RecyclerView || child instanceof ScrollView || child instanceof NestedScrollView || child instanceof ViewPager || child instanceof ViewPager2 || child instanceof WebView || child instanceof CoordinatorLayout || child instanceof SwipeRefreshLayout) {
-                    findScrollView((ViewGroup) child);
-                    //scrollableChild = child;
+                View child = viewGroup.getChildAt(i);
+                if (child instanceof AbsListView || child instanceof RecyclerView || child instanceof ScrollView || child instanceof NestedScrollView || child instanceof ViewPager || child instanceof ViewPager2 || child instanceof WebView || child instanceof CoordinatorLayout || child instanceof SwipeRefreshLayout) {
+                    scrollableChildren.add(child);
                 }
+                if (view instanceof ViewGroup) {
+                    findScrollableChildren((ViewGroup) child);
+                }
+            }
+        }
+    }
+
+    private void findTouchedFamily(MotionEvent ev){
+        touchedFamily = new ArrayList<>();
+        int x = Math.round(ev.getX());
+        int y = Math.round(ev.getY());
+        for (View scrollable: scrollableChildren) {
+            if (x > scrollable.getLeft() && x < scrollable.getRight() && y > scrollable.getTop() && y < scrollable.getBottom()) {
+                touchedFamily.add(scrollable);
             }
         }
     }
@@ -265,17 +281,34 @@ public class SwipeDismissLayout extends ViewGroup {
         }
     }
 
-    public boolean canChildScrollUp() {
-        return scrollableChild!=null && scrollableChild.canScrollVertically(-1);
+    public boolean canFamilyScrollVertically(int direction){
+        for (View view : touchedFamily){
+            if(view.canScrollVertically(direction)){
+                return true;
+            }
+        }
+        return false;
     }
-    public boolean canChildScrollDown() {
-        return scrollableChild!=null && scrollableChild.canScrollVertically(1);
+    public boolean canFamilyScrollHorizontally(int direction){
+        for (View view : touchedFamily){
+            if(view.canScrollHorizontally(direction)){
+                return true;
+            }
+        }
+        return false;
     }
-    public boolean canChildScrollStart() {
-        return scrollableChild!=null && scrollableChild.canScrollHorizontally((isRtl())?1:-1);
+
+    public boolean canTouchedFamilyScrollUp() {
+        return touchedFamily!=null && canFamilyScrollVertically(-1);
     }
-    public boolean canChildScrollEnd() {
-        return scrollableChild!=null && scrollableChild.canScrollHorizontally((isRtl())?-1:1);
+    public boolean canTouchedFamilyScrollDown() {
+        return touchedFamily!=null && canFamilyScrollVertically(1);
+    }
+    public boolean canTouchedFamilyScrollStart() {
+        return touchedFamily!=null && canFamilyScrollHorizontally((isRtl())?1:-1);
+    }
+    public boolean canTouchedFamilyScrollEnd() {
+        return touchedFamily!=null && canFamilyScrollHorizontally((isRtl())?-1:1);
     }
 
     private boolean isRtl(){
@@ -316,12 +349,12 @@ public class SwipeDismissLayout extends ViewGroup {
         public int clampViewPositionVertical(@NonNull View child, int top, int dy) {
 
             int min=0, max=0;
-            if (dragFrom == DragFrom.TOP && !canChildScrollUp()) {
-                    min = mOriginalCapturedViewTop;
-                    max = mOriginalCapturedViewTop + verticalDragRange;
-            } else if (dragFrom == DragFrom.BOTTOM && !canChildScrollDown()) {
-                    min = mOriginalCapturedViewTop - verticalDragRange;
-                    max = mOriginalCapturedViewTop;
+            if (dragFrom == DragFrom.TOP && !canTouchedFamilyScrollUp()) {
+                min = mOriginalCapturedViewTop;
+                max = mOriginalCapturedViewTop + verticalDragRange;
+            } else if (dragFrom == DragFrom.BOTTOM && !canTouchedFamilyScrollDown()) {
+                min = mOriginalCapturedViewTop - verticalDragRange;
+                max = mOriginalCapturedViewTop;
             }
             return clamp(min, top, max);
         }
@@ -329,7 +362,7 @@ public class SwipeDismissLayout extends ViewGroup {
         public int clampViewPositionHorizontal(@NonNull View child, int left, int dx) {
 
             int min=0, max=0;
-            if (dragFrom == DragFrom.START && !canChildScrollStart()) {
+            if (dragFrom == DragFrom.START && !canTouchedFamilyScrollStart()) {
                 if (isRtl()) {
                     min = mOriginalCapturedViewLeft - horizontalDragRange;
                     max = mOriginalCapturedViewLeft;
@@ -337,7 +370,7 @@ public class SwipeDismissLayout extends ViewGroup {
                     min = mOriginalCapturedViewLeft;
                     max = mOriginalCapturedViewLeft + horizontalDragRange;
                 }
-            } else if (dragFrom == DragFrom.END && !canChildScrollEnd()) {
+            } else if (dragFrom == DragFrom.END && !canTouchedFamilyScrollEnd()) {
                 if (isRtl()) {
                     min = mOriginalCapturedViewLeft;
                     max = mOriginalCapturedViewLeft + horizontalDragRange;
@@ -434,17 +467,17 @@ public class SwipeDismissLayout extends ViewGroup {
 
     private void smoothScrollToY(int finalTop) {
         if (viewDragHelper.settleCapturedViewAt(0, finalTop)) {
-            ViewCompat.postInvalidateOnAnimation(SwipeDismissLayout.this);
+            ViewCompat.postInvalidateOnAnimation(this);
         }
     }
     private void smoothScrollToX(int finalLeft) {
         if (viewDragHelper.settleCapturedViewAt(finalLeft, 0)) {
-            ViewCompat.postInvalidateOnAnimation(SwipeDismissLayout.this);
+            ViewCompat.postInvalidateOnAnimation(this);
         }
     }
 
-    private void clearScrollableChild() {
-        scrollableChild = null;
+    private void clearScrollableChildren() {
+        scrollableChildren = null;
         view = null;
     }
 
@@ -455,6 +488,7 @@ public class SwipeDismissLayout extends ViewGroup {
         return Math.min(Math.max(min, value), max);
     }
 }
+
 
 
 

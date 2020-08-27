@@ -3,6 +3,12 @@
 SwipeDismissLayout
 ===================
 
+v1.3.0 by mohapps:
+
+whether to swipe for dismiss or not will be determined based on touch area rather than a single child view's scrollability
+
+(If views in the touched area can be scrolled in the same direction they can scroll otherwise swipe for dismiss can happen)
+
 v1.2.0 by mohapps:
 
 make activity dismissable by just a single line of code
@@ -20,7 +26,7 @@ migrated to AndroidX, updated Gradle and build tools
 
 ----------
 
-SwipeDismissLayout is a viewgroup which if added as a parent viewgroup in the layout (activity) container, can enables the capability to finish the activity/fragment via slide down gesture.
+SwipeDismissLayout is a viewgroup which if added as a parent viewgroup in the layout (activity) container, can enable the capability to finish the activity/fragment via slide down gesture.
 
 ----------
 
@@ -45,7 +51,7 @@ Add it in your root build.gradle at the end of repositories:
 Add the dependency
 
         dependencies  {
-	     implementation 'com.github.mohappsdev:SwipeDismissLayout:v1.2.0'
+	     implementation 'com.github.mohappsdev:SwipeDismissLayout:v1.3.0'
         }
 
 Set translucent theme for that activity in AndroidManifest:
@@ -60,7 +66,7 @@ Translucent theme includes:
 
 Do it Programmatically in onCreate
 
-        Creator.createSwipeDismissLayout(this, true, DragFrom.TOP);
+        Creator.createSwipeDismissLayout(this, true, DragFrom.START);
 
 OR Wrap the activity you want to be dismissable in com.viewgroup.SwipeDismissLayout and set dismiss_direction:
 
@@ -90,7 +96,7 @@ If translucent theme causes your dismissable activity layout background to be tr
 ----------
 Version
 -------------
-1.2.0
+1.3.0
 
  ----------
 
