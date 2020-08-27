@@ -256,7 +256,7 @@ public class SwipeDismissLayout extends ViewGroup {
                 if (child instanceof AbsListView || child instanceof RecyclerView || child instanceof ScrollView || child instanceof NestedScrollView || child instanceof ViewPager || child instanceof ViewPager2 || child instanceof WebView || child instanceof CoordinatorLayout || child instanceof SwipeRefreshLayout) {
                     scrollableChildren.add(child);
                 }
-                if (view instanceof ViewGroup) {
+                if (child instanceof ViewGroup) {
                     findScrollableChildren((ViewGroup) child);
                 }
             }
