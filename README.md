@@ -3,6 +3,10 @@
 SwipeDismissLayout
 ===================
 
+v1.3.5 by mohapps:
+
+more accurate and more efficient way of calculating touched area
+
 v1.3.0 by mohapps:
 
 whether to swipe for dismiss or not will be determined based on touch area rather than a single child view's scrollability
@@ -51,7 +55,7 @@ Add it in your root build.gradle at the end of repositories:
 Add the dependency
 
         dependencies  {
-	     implementation 'com.github.mohappsdev:SwipeDismissLayout:v1.3.0'
+	     implementation 'com.github.mohappsdev:SwipeDismissLayout:v1.3.5'
         }
 
 Set translucent theme for that activity in AndroidManifest:
@@ -96,7 +100,7 @@ If translucent theme causes your dismissable activity layout background to be tr
 ----------
 Version
 -------------
-1.3.0
+1.3.5
 
  ----------
 

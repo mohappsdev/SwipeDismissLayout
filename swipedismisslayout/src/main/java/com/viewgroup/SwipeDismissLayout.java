@@ -2,11 +2,14 @@ package com.viewgroup;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewParent;
 import android.view.ViewTreeObserver;
+import android.view.Window;
 import android.webkit.WebView;
 import android.widget.AbsListView;
 import android.widget.ScrollView;
@@ -215,7 +218,9 @@ public class SwipeDismissLayout extends ViewGroup {
     public boolean onInterceptTouchEvent(MotionEvent ev) {
         boolean handled = false;
         ensureTarget();
-        findTouchedFamily(ev);
+        if (ev.getAction() == MotionEvent.ACTION_DOWN) {
+            findTouchedFamily(ev);
+        }
         if (isEnabled() && isSwipeEnabled && !isSwipeIndirect(ev)) {
             handled = viewDragHelper.shouldInterceptTouchEvent(ev);
         } else {
@@ -265,11 +270,58 @@ public class SwipeDismissLayout extends ViewGroup {
 
     private void findTouchedFamily(MotionEvent ev){
         touchedFamily = new ArrayList<>();
+
+        Rect rectangle = new Rect();
+        Window window = ((Activity)getContext()).getWindow();
+        window.getDecorView().getWindowVisibleDisplayFrame(rectangle);
+        int statusBarHeight = rectangle.top;
+
         int x = Math.round(ev.getX());
-        int y = Math.round(ev.getY());
+        int y = Math.round(ev.getY() + statusBarHeight);
         for (View scrollable: scrollableChildren) {
-            if (x > scrollable.getLeft() && x < scrollable.getRight() && y > scrollable.getTop() && y < scrollable.getBottom()) {
-                touchedFamily.add(scrollable);
+
+            Rect scrollableRect = new Rect();
+            scrollable.getGlobalVisibleRect(scrollableRect);
+
+            if (x > scrollableRect.left && x < scrollableRect.right && y > scrollableRect.top && y < scrollableRect.bottom) {
+                if(!touchedFamily.contains(scrollable)) {
+                    touchedFamily.add(scrollable);
+                }
+                addFamily(scrollable);
+            }
+        }
+    }
+
+    private void addFamily(View view){
+        addParents(view);
+        if(view instanceof CoordinatorLayout) {
+            addChildren((ViewGroup) view);
+        }
+    }
+
+    private void addParents(View view){
+        ViewParent parent = view.getParent();
+        if(parent instanceof View){
+            if(!touchedFamily.contains((View)parent) && scrollableChildren.contains((View)parent)){
+                touchedFamily.add((View) parent);
+            }
+            addParents((View) parent);
+        }
+    }
+
+    private void addChildren(ViewGroup viewGroup){
+        if (viewGroup.getChildCount() > 0) {
+            int count = viewGroup.getChildCount();
+            for (int i = 0; i < count; i++) {
+                View child = viewGroup.getChildAt(i);
+                if (child instanceof AbsListView || child instanceof RecyclerView || child instanceof ScrollView || child instanceof NestedScrollView) {
+                    if(!touchedFamily.contains((View)child) && scrollableChildren.contains((View)child)) {
+                        touchedFamily.add(child);
+                    }
+                }
+                if (child instanceof ViewGroup) {
+                    addChildren((ViewGroup) child);
+                }
             }
         }
     }
